@@ -62,7 +62,8 @@ version() {
 
 vm_path_to_vmx() {
   local vm="$1"
-  find "$vm" -type f -iname "*.vmx"
+  local vmx_path="$(find "$vm" -type f -iname "*.vmx" | head -n 1)"
+  echo "$(dirname "$vmx_path")/$(basename "$vmx_path")"
 }
 
 vm_is_running() {
@@ -79,17 +80,19 @@ vm_is_running() {
 vm_archive() {
   local vm="$1"
   local dest="$2"
+  local running=false
+
+  if $verbose; then echo "Archiving '${vm}'..."; fi
+
+  if vm_is_running "$vm"; then
+    running=true
+    if $verbose; then echo "VM '${vm}' is running."; fi
+  fi
 
   
 }
 
 main() {
-  # parse arguments
-  if [ $? -ne 0 ]; then
-    usage
-    exit 2
-  fi
-
   case "$1" in
     "-h")
       usage
@@ -97,13 +100,13 @@ main() {
       ;;
     "-v")
       verbose=true
+      shift
       ;;
     "-V")
       version
       exit
       ;;
   esac
-  shift
 
   source="$1"
   destination="$2"
@@ -123,7 +126,7 @@ main() {
     if $verbose; then echo "Archiving VMs from '${source}' to '${destination}'..."; fi
     while IFS= read -r line; do
       vm_archive "$line" "$destination"
-    done <<< "$(find "$source" -type d -iname "*.vmwarevm")"
+    done <<< "$(find "${source%/}" -type d -iname "*.vmwarevm")"
   fi
 }
 
