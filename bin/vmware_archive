@@ -77,6 +77,28 @@ vm_is_running() {
   $running
 }
 
+vm_stop() {
+  local running=false
+  local vm="$(vm_path_to_vmx "$1")"
+
+  if vm_is_running "$1"; then
+    if $verbose; then echo -n "Stopping VM '${vm}'... "; fi
+    "$VMRUN" stop "$vm" soft
+    if $verbose; then echo "Stopped."; fi
+  fi
+}
+
+vm_start() {
+  local running=false
+  local vm="$(vm_path_to_vmx "$1")"
+
+  if ! vm_is_running "$1"; then
+    if $verbose; then echo -n "Starting VM '${vm}'... "; fi
+    "$VMRUN" start "$vm"
+    if $verbose; then echo "Started."; fi
+  fi
+}
+
 vm_archive() {
   local vm="$1"
   local dest="$2"
