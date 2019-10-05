@@ -116,24 +116,56 @@ vm_start() {
 }
 
 vm_archive() {
+  local success=true
   local vm="$1"
   local dest="$2"
   local running=false
 
+  # ensure source & destinations are correct for rsync
+  vm="${vm%/}"
+  dest="${dest%/}/"
+  if [ ! -d "${vm}" ]; then
+    echo "ERROR! VM '${vm}' is not a directory!"
+    success=false
+  fi
+  if [ ! -d "${dest}" ]; then
+    echo "ERROR! Destination path '${dest}' is not a directory!"
+    success=false
+  fi
+
   if $verbose; then echo "Archiving '${vm}'..."; fi
 
-  if vm_is_running "$vm"; then
+  # stop the VM if it's running
+  if $success && vm_is_running "$vm"; then
     running=true
     if $verbose; then echo "VM '${vm}' is running."; fi
 
-    vm_stop "$vm"
+    if ! vm_stop "$vm"; then success=false; fi
   fi
 
-  # actually archive the VM...
-
-  if $running; then
-    vm_start "$vm"
+  # ensure source & destinations are correct for rsync
+  if [ ! -d "${dest}" ]; then
+    echo "ERROR! Destination path is not a directory!"
+    success=false
   fi
+
+  # copy the VM to the destination
+  if $success; then
+    if $verbose; then echo "Copying '${vm}' to '${dest}'... "; fi
+    if $dry_run || rsync -va --delete "${vm}" "${dest}"; then
+      echo "Copied."
+    else
+      echo "ERROR! An unknown error occurred copying the VM!"
+      success=false
+    fi
+  fi
+
+  # start the VM if it was running
+  if $success && $running; then
+    if ! vm_start "$vm"; then success=false; fi
+  fi
+
+  $success
 }
 
 # see if any arguments were passed in
@@ -215,7 +247,7 @@ if [ $# -gt 0 ]; then
       if [ "$(( argc - i ))" -eq 2 ]; then
         source="${argv[$i]}"
         (( i++ ))
-        destination="{argv[$i]}"
+        destination="${argv[$i]}"
       else
 	echo "ERROR! Incorrect number of arguments!"
         usage
