@@ -42,6 +42,7 @@ VMRUN="${VMRUN:="/Applications/VMware Fusion.app/Contents/Library/vmrun"}"
 
 # global variables
 verbose=false
+dry_run=false
 source=""
 destination=""
 
@@ -53,6 +54,7 @@ usage() {
   echo "  -v  : verbose output"
   echo "  -V  : print the version number and exit"
   echo "  -h  : print these usage instructions and exit"
+  echo "  -n  : don't actually perform any actions (dry run)"
 }
 
 # print version info
@@ -78,25 +80,39 @@ vm_is_running() {
 }
 
 vm_stop() {
+  local success=true
   local running=false
   local vm="$(vm_path_to_vmx "$1")"
 
   if vm_is_running "$1"; then
     if $verbose; then echo -n "Stopping VM '${vm}'... "; fi
-    "$VMRUN" stop "$vm" soft
-    if $verbose; then echo "Stopped."; fi
+    if $dry_run || "$VMRUN" stop "$vm" soft; then
+      if $verbose; then echo "Stopped."; fi
+    else
+      success=false
+      echo "ERROR! Unable to stop VM!"
+    fi
   fi
+
+  $success
 }
 
 vm_start() {
+  local success=true
   local running=false
   local vm="$(vm_path_to_vmx "$1")"
 
   if ! vm_is_running "$1"; then
     if $verbose; then echo -n "Starting VM '${vm}'... "; fi
-    "$VMRUN" start "$vm"
-    if $verbose; then echo "Started."; fi
+    if $dry_run || "$VMRUN" start "$vm"; then
+      if $verbose; then echo "Started."; fi
+    else
+      success=false
+      echo "ERROR! Unable to start VM!"
+    fi
   fi
+
+  $success
 }
 
 vm_archive() {
@@ -109,9 +125,15 @@ vm_archive() {
   if vm_is_running "$vm"; then
     running=true
     if $verbose; then echo "VM '${vm}' is running."; fi
+
+    vm_stop "$vm"
   fi
 
-  
+  # actually archive the VM...
+
+  if $running; then
+    vm_start "$vm"
+  fi
 }
 
 main() {
@@ -122,6 +144,10 @@ main() {
       ;;
     "-v")
       verbose=true
+      shift
+      ;;
+    "-n")
+      dry_run=true
       shift
       ;;
     "-V")
