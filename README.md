@@ -17,11 +17,11 @@ A utility for archiving VMware Fusion virtual machines. Will archive single VMs 
 
 ### Single
 
-  vmware_archive /path/to/virtual_machine.vmwarevm /path/to/destination
+    vmware_archive /path/to/virtual_machine.vmwarevm /path/to/destination
 
 ### Multiple
 
-  vmware_archive /path/to/virtual/machines/ /path/to/destination
+    vmware_archive /path/to/virtual/machines/ /path/to/destination
 
 ## Reference
 
