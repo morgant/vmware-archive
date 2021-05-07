@@ -13,7 +13,7 @@
 #
 # LICENSE:
 #
-# Copyright (c) 2019 Morgan Aldridge
+# Copyright (c) 2021 Morgan Aldridge
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy 
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@
 # info
 host="$(hostname)"
 tool="$(basename "$0")"
-version="0.1"
-copyright="Copyright (c) 2019 Morgan Aldridge"
+version="0.1.1"
+copyright="Copyright (c) 2021 Morgan Aldridge"
 
 # environment variables
 VMRUN="${VMRUN:="/Applications/VMware Fusion.app/Contents/Library/vmrun"}"
