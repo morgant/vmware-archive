@@ -7,6 +7,9 @@
 #
 # v0.1   - 2019-10-05 - Morgan Aldridge <morgant@makkintosshu.com>
 #                       Initial version.
+# v0.1.1 - 2021-05-07 - Morgan Aldridge
+#                       No longer use 'soft' stop of VM, instead
+#                       rely on VMX default.
 #
 # LICENSE:
 #
@@ -86,7 +89,7 @@ vm_stop() {
 
   if vm_is_running "$1"; then
     if $verbose; then echo -n "Stopping VM '${vm}'... "; fi
-    if $dry_run || "$VMRUN" stop "$vm" soft; then
+    if $dry_run || "$VMRUN" stop "$vm"; then
       if $verbose; then echo "Stopped."; fi
     else
       success=false
